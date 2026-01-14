@@ -1,3 +1,4 @@
+from kalshiAPI.helpers.createOrder import createOverUnderOrder
 
 defaultGap = 2
 basketballOverUnderGap = 2
@@ -22,7 +23,7 @@ def detectGaps(kalshi, oddsAPI, sport, type):
             kalshiMetric = kalshiGame["spread"]
         # Try to find matching game in oddsAPI
         for odds_game in oddsAPI:
-            if odds_game.get("game") == game_name:  # .get() is safer
+            if odds_game.get("game") == game_name:
 
                 if type == "overUnder":
                     oddsMetric = odds_game["overUnder"]
@@ -33,4 +34,9 @@ def detectGaps(kalshi, oddsAPI, sport, type):
 
                 if difference >= determineGap(sport, type):
                     print(f"Gap found for : {game_name} | {type} Kalshi : {kalshiMetric} | {type} OddsAPI : {oddsMetric}")
+
+                    # TODO implement automatic ordering after key refresh
+                    #if type == 'overUnder':
+                        # create order
+                        # createOverUnderOrder(kalshiGame, odds_game)
                 break
