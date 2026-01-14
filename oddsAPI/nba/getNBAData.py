@@ -1,16 +1,15 @@
-# nba_odds_pull_fanduel_only.py
-# Pull current/upcoming NBA odds *only from FanDuel* using The Odds API
-# Requirements: pip install requests pandas
-# Get your API key → https://the-odds-api.com (free tier = 500 req/mo)
-
 import requests
 from datetime import datetime, timezone, timedelta
-import pandas as pd
+from dotenv import load_dotenv
+import os
 
 # ────────────────────────────────────────────────
 #  CONFIGURATION
 # ────────────────────────────────────────────────
-API_KEY = "538fcbcd3cc38956f71965908a9df0f4"  # ← Replace with your key!
+
+load_dotenv()  # loads .env into environment variables
+
+API_KEY = os.getenv("ODDS_API_KEY")
 
 REGIONS = "us"  # usually "us" for FanDuel
 MARKETS = "h2h,spreads,totals"  # moneyline, spread, total

@@ -2,9 +2,6 @@ import json
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 
-# Update this prefix to match your actual spread market tickers
-# Common patterns: KXNFLSPREAD-26, KXNFLLINE-26, etc. — check your data
-PREFIX = "KXNFLSPREAD-26"  # ← adjust to your NFL spread markets prefix
 
 def find_consensus_spread(event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
