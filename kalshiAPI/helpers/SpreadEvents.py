@@ -5,26 +5,46 @@ from pathlib import Path
 
 def find_consensus_spread(event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
-    Finds the spread line closest to 50% implied probability (using yes_ask as proxy).
-    Returns the best market dict or None if no suitable market found.
+    Returns the single Kalshi market whose YES/NO prices imply the
+    closest true 50/50 Over/Under consensus.
     """
+
     markets = event.get("markets", [])
     if not markets:
         return None
 
-    def distance_to_fifty(m):
-        return abs(m.get("yes_ask", 0) / 100.0 - 0.5)
+    best_market = None
+    best_score = float("inf")
 
-    best = min(markets, key=distance_to_fifty, default=None)
-    if best is None:
-        return None
+    for m in markets:
+        if not isinstance(m, dict):
+            continue
 
-    # Sanity check: if it's way off 50%, it's probably not the main spread line
-    prob = best["yes_ask"] / 100.0
-    if abs(prob - 0.5) > 0.28:  # slightly tighter than O/U since spreads are usually sharper
-        return None
+        yes_ask = m.get("yes_ask")
+        no_ask = m.get("no_ask")
+        total = m.get("floor_strike")
 
-    return best
+        if yes_ask is None or no_ask is None or total is None:
+            continue
+
+        p_over = yes_ask / 100.0
+        p_under = no_ask / 100.0
+
+        # Reject broken books
+        if not (0.05 <= p_over <= 0.95 and 0.05 <= p_under <= 0.95):
+            continue
+
+        score = (
+            abs(p_over - 0.5) +
+            abs(p_under - 0.5) +
+            abs((p_over + p_under) - 1.0)
+        )
+
+        if score < best_score:
+            best_score = score
+            best_market = m
+
+    return best_market
 
 
 def parseSpreadData(sports_events, eventPrefix):

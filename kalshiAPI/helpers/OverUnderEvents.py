@@ -5,8 +5,8 @@ from collections import defaultdict
 
 def find_consensus_over_under(event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
-    Returns the single Kalshi market whose YES/NO prices imply the
-    closest true 50/50 Over/Under consensus.
+    Returns the single Kalshi market whose prices imply the
+    closest true 50/50 Over/Under consensus using mid prices.
     """
 
     markets = event.get("markets", [])
@@ -20,25 +20,29 @@ def find_consensus_over_under(event: Dict[str, Any]) -> Optional[Dict[str, Any]]
         if not isinstance(m, dict):
             continue
 
+        yes_bid = m.get("yes_bid")
         yes_ask = m.get("yes_ask")
+        no_bid = m.get("no_bid")
         no_ask = m.get("no_ask")
         total = m.get("floor_strike")
 
-        if yes_ask is None or no_ask is None or total is None:
+        if None in (yes_bid, yes_ask, no_bid, no_ask, total):
             continue
 
-        p_over = yes_ask / 100.0
-        p_under = no_ask / 100.0
+        # Mid prices → implied probabilities
+        yes_mid = (yes_bid + yes_ask) / 200.0
+        no_mid = (no_bid + no_ask) / 200.0
 
-        # Reject broken books
-        if not (0.05 <= p_over <= 0.95 and 0.05 <= p_under <= 0.95):
+        # Reject broken or illiquid books
+        if yes_mid <= 0 or no_mid <= 0:
             continue
 
-        score = (
-            abs(p_over - 0.5) +
-            abs(p_under - 0.5) +
-            abs((p_over + p_under) - 1.0)
-        )
+        # Renormalize so probabilities sum to 1
+        p_over = yes_mid / (yes_mid + no_mid)
+        p_under = no_mid / (yes_mid + no_mid)
+
+        # Distance from true 50/50 consensus
+        score = abs(p_over - 0.5)
 
         if score < best_score:
             best_score = score
