@@ -37,11 +37,15 @@ def detectGaps(kalshi, oddsAPI, sport, type):
                 elif type == "spread":
                     oddsMetric = odds_game["spread"]
 
-                difference = abs(abs(kalshiMetric) - abs(oddsMetric)) # remove unders because overs tend to hit more
+                difference = abs(abs(kalshiMetric) - abs(oddsMetric))
 
 
                 if difference >= determineGap(sport, type):
-                    print(f"Gap found for : {game_name} | {type} Kalshi : {kalshiMetric} | {type} OddsAPI : {oddsMetric}")
+                    if oddsMetric < kalshiMetric and type == 'overUnder':
+                        # do not allow unders for auto ordering because overs tend to hit more
+                        print(f"Under Gap found for : {game_name} | {type} Kalshi : {kalshiMetric} | {type} OddsAPI : {oddsMetric}")
+                    else:
+                        print(f"Gap found for : {game_name} | {type} Kalshi : {kalshiMetric} | {type} OddsAPI : {oddsMetric}")
 
                     # TODO implement automatic ordering after key refresh
                     #if type == 'overUnder':

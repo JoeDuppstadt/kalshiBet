@@ -3,13 +3,15 @@ from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 import os
 
+from oddsAPI.keyManagment.APIKeyManager import saveKeyUsage, returnAPIKey
+
 # ────────────────────────────────────────────────
 #  CONFIGURATION
 # ────────────────────────────────────────────────
 
 load_dotenv()  # loads .env into environment variables
 
-API_KEY = os.getenv("ODDS_API_KEY")
+apiKeyName, API_KEY = returnAPIKey()
 
 REGIONS = "us"  # usually "us" for FanDuel
 MARKETS = "h2h,spreads,totals"  # moneyline, spread, total
@@ -108,6 +110,8 @@ def get_nhl_odds():
     # Very useful during testing / quota management
     print(f"Quota remaining this month: {response.headers.get('x-requests-remaining', 'unknown')}")
     print(f"Quota used this month      : {response.headers.get('x-requests-used', 'unknown')}")
+
+    saveKeyUsage(apiKeyName, response.headers.get('x-requests-remaining', 'unknown'))
 
     return formatted_odds_list
 
