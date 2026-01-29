@@ -13,14 +13,17 @@ if __name__ == '__main__':
     #parseNFLSpreadData(sportingEvents)
 
     # NBA
-    #NBA_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNBATOTAL")
-    #NBA_kalshiSpreadData = parseSpreadData(sportingEvents, "KXNBASPREAD")
-    #oddsNBAGames = get_odds_nba_data()
+    #kalshi
+    NBA_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNBATOTAL")
+    NBA_kalshiSpreadData = parseSpreadData(sportingEvents, "KXNBASPREAD")
 
-    # NCAAMB
-    #NCAAMB_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNCAAMBTOTAL")
-    #NCAAMB_kalshiSpreadData = parseSpreadData(sportingEvents, "KXNCAAMBSPREAD")
-    #oddsNCAAMBGames = get_odds_ncaamb_data()
+    #polymarket
+    oddsNBAGames = get_odds_nba_data()
+
+    # # NCAAMB
+    NCAAMB_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNCAAMBTOTAL")
+    NCAAMB_kalshiSpreadData = parseSpreadData(sportingEvents, "KXNCAAMBSPREAD")
+    oddsNCAAMBGames = get_odds_ncaamb_data()
 
     # NHL
     NHL_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNHLTOTAL")
@@ -28,17 +31,26 @@ if __name__ == '__main__':
     oddsNHLGames = get_odds_nhl_data()
 
     print("-"*70)
-    print(NHL_kalshiOverUnderData)
-    print(oddsNHLGames)
 
     # NBA detect gaps
-    #detectGaps(NBA_kalshiOverUnderData, oddsNBAGames, 'basketball', 'overUnder')
-    #detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'basketball', 'spread')
+    print('------------------------------NBA-----------------------------------')
+    print(NBA_kalshiOverUnderData)
+    print(oddsNBAGames)
+    detectGaps(NBA_kalshiOverUnderData, oddsNBAGames, 'basketball', 'overUnder')
+    detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'basketball', 'spread')
 
+    print('------------------------------NCAAMB-----------------------------------')
+    print(NCAAMB_kalshiOverUnderData)
+    print(oddsNCAAMBGames)
     # NCAAMB detect gaps
-    #detectGaps(NCAAMB_kalshiOverUnderData, oddsNCAAMBGames, 'basketball', 'overUnder')
-    #detectGaps(NCAAMB_kalshiSpreadData, oddsNCAAMBGames, 'basketball', 'spread')
+    if NCAAMB_kalshiOverUnderData is not None:
+        detectGaps(NCAAMB_kalshiOverUnderData, oddsNCAAMBGames, 'basketball', 'overUnder')
+    if NCAAMB_kalshiSpreadData is not None:
+        detectGaps(NCAAMB_kalshiSpreadData, oddsNCAAMBGames, 'basketball', 'spread')
 
+    print('------------------------------NHL-----------------------------------')
+    print(NHL_kalshiOverUnderData)
+    print(oddsNHLGames)
     # nhl detect gaps
     detectGaps(NHL_kalshiOverUnderData, oddsNHLGames, 'hockey', 'overUnder')
     detectGaps(NHL_kalshiSpreadData, oddsNHLGames, 'basketball', 'spread')

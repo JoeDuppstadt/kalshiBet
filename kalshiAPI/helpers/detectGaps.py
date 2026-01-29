@@ -35,7 +35,10 @@ def detectGaps(kalshi, oddsAPI, sport, type):
                 if type == "overUnder":
                     oddsMetric = odds_game["overUnder"]
                 elif type == "spread":
-                    oddsMetric = odds_game["spread"]
+                    try:
+                        oddsMetric = odds_game["spread"]
+                    except Exception as e:
+                        print(f'No spread found for: {game_name}')
 
                 difference = abs(abs(kalshiMetric) - abs(oddsMetric))
 

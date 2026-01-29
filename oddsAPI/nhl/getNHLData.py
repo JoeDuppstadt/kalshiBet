@@ -31,11 +31,32 @@ TEAM_ABBRS = {
     "Detroit Red Wings": "DET",
     "St Louis Blues": "STL",
     "Edmonton Oilers": "EDM",
-    "": "",
-    "": "",
-    "": "",
-    "": "",
-
+    "Washington Capitals": "WSH",
+    "Colorado Avalanche": "COL",
+    "Pittsburgh Penguins": "PIT",
+    "Seattle Kraken": "SEA",
+    "San Jose Sharks": "SJ",
+    "Florida Panthers": "FLA",
+    "Minnesota Wild": "MIN",
+    "Toronto Maple Leafs": "TOR",
+    "Philadelphia Flyers": "PHI",
+    "Vegas Golden Knights": "VGK",
+    "Winnipeg Jets": "WPG",
+    "Chicago Blackhawks": "CHI",
+    "New Jersey Devils": "NJ",
+    "Calgary Flames": "CGY",
+    "New York Rangers": "NYR",
+    "Anaheim Ducks": "ANA",
+    "New York Islanders": "NYI",
+    "Vancouver Canucks": "VAN",
+    "Buffalo Sabres": "BUF",
+    "Nashville Predators": "NSH",
+    "Boston Bruins": "BOS",
+    "Columbus Blue Jackets": "CBJ",
+    "Montréal Canadiens": "MTL",
+    "Los Angeles Kings": "LA",
+    "Utah Mammoth":"UTA",
+    "Carolina Hurricanes":"CAR"
 }
 
 # ────────────────────────────────────────────────
@@ -46,7 +67,7 @@ def get_nhl_odds():
 
 
     curr_utc = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-    eod_utc = (datetime.now(timezone.utc) + timedelta(hours=12)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    eod_utc = (datetime.now(timezone.utc) + timedelta(hours=14)).strftime('%Y-%m-%dT%H:%M:%SZ')
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
 
     params = {

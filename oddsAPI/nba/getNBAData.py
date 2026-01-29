@@ -38,6 +38,7 @@ TEAM_ABBRS = {
     "Houston Rockets": "HOU",
     "Indiana Pacers": "IND",
     "LA Clippers": "LAC",
+    "Los Angeles Clippers":"LAC",
     "Los Angeles Lakers": "LAL",
     "Memphis Grizzlies": "MEM",
     "Miami Heat": "MIA",
@@ -66,7 +67,7 @@ def get_nba_odds():
 
 
     curr_utc = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-    eod_utc = (datetime.now(timezone.utc) + timedelta(hours=12)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    eod_utc = (datetime.now(timezone.utc) + timedelta(hours=14)).strftime('%Y-%m-%dT%H:%M:%SZ')
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds"
 
     params = {
@@ -96,8 +97,8 @@ def get_nba_odds():
     for game in data:
         formatted_odds_dict = {}
 
-        home_abbr = TEAM_ABBRS.get(game["home_team"], game["home_team"][:3].upper())
-        away_abbr = TEAM_ABBRS.get(game["away_team"], game["away_team"][:3].upper())
+        home_abbr = TEAM_ABBRS.get(game["home_team"], game["home_team"])
+        away_abbr = TEAM_ABBRS.get(game["away_team"], game["away_team"])
         game_name = away_abbr + ' @ ' + home_abbr
         formatted_odds_dict['game'] = game_name
 
