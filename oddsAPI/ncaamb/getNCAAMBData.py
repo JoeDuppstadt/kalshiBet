@@ -77,6 +77,8 @@ TEAM_ABBRS = {
     "SE Louisiana Lions": "SELA",
     "Texas A&M-CC Islanders": "Texas A&M-Corpus Christi",
     "Southern Jaguars": "Southern University",
+    "Cornell Big Red":"COR",
+    "Harvard Crimson":"HARV",
     "Grambling St Tigers": "Grambling St.",
     "Northwestern St Demons": "NWST",
     "Incarnate Word Cardinals": "IW",
@@ -459,10 +461,6 @@ def get_ncaamb_odds():
                     formatted_odds_dict['overUnder'] = abs(point)
         formatted_odds_list.append(formatted_odds_dict)
 
-    # Very useful during testing / quota management
-    print(f"Quota remaining this month: {response.headers.get('x-requests-remaining', 'unknown')}")
-    print(f"Quota used this month      : {response.headers.get('x-requests-used', 'unknown')}")
-
     saveKeyUsage(apiKeyName, response.headers.get('x-requests-remaining', 'unknown'))
 
     return formatted_odds_list
@@ -472,9 +470,6 @@ def print_games(games):
     if not games:
         print("No upcoming NCAA Mens Basketball games found (or API error)")
         return
-
-    print(f"\nNBA upcoming games with FanDuel odds ({len(games)} found)")
-    print("-" * 70)
 
     for game in games:
         commence = game["commence_time"]
@@ -520,9 +515,6 @@ def print_games(games):
 
 
 def get_odds_ncaamb_data():
-    print(f"Fetching NCAA Mens Basketball odds from FanDuel only... ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
-    print(f"Regions: {REGIONS} | Markets: {MARKETS} | Odds: {ODDS_FORMAT}")
-    print("-" * 70)
 
     games = get_ncaamb_odds()
     # if games:

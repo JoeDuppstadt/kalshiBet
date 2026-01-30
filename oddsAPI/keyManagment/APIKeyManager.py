@@ -40,6 +40,6 @@ def returnAPIKey() -> Tuple[str, str]:
         with open(CSV_PATH, newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if int(row['keysRemaining']) > 0:
+                if int(row['keysRemaining']) > 2:
                     return row['key'], os.getenv(row['key'])
     raise Exception("No API keys have keysRemaining > 0")

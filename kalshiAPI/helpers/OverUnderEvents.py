@@ -54,8 +54,6 @@ def parseOverUnderData(sports_events, eventPrefix):
         if event.get("event_ticker", "").startswith(eventPrefix)
     ]
 
-    print(f"\nFound {len(filtered_events)} events starting with '{eventPrefix}'")
-
     if filtered_events:
         for event in filtered_events:
             formatted_odds_dict = {}
@@ -66,11 +64,6 @@ def parseOverUnderData(sports_events, eventPrefix):
             ticker = event.get("event_ticker", "—")
             title = event.get("title", "—")
             sub_title = event.get("sub_title", "—")
-
-            print(f"\n{'─' * 70}")
-            print(f"Game: {title}")
-            print(f"  Ticker:      {ticker}")
-            print(f"  Sub-title:   {sub_title}")
 
             consensus_market = find_consensus_over_under(event)
 
@@ -83,10 +76,6 @@ def parseOverUnderData(sports_events, eventPrefix):
                 formatted_odds_dict['ticker'] = ticker
                 formatted_odds_dict['overUnder'] = strike
                 formatted_odds_list.append(formatted_odds_dict)
-
-                print(f"  → Current consensus O/U: **{strike}**")
-                print(f"     Over {strike}:  Yes ask {yes_prob:.1%} ({consensus_market['yes_ask_dollars']})")
-                print(f"     Under {strike}: No ask  {no_prob:.1%} ({consensus_market['no_ask_dollars']})")
 
             else:
                 print("  → Could not determine a clear consensus O/U line")

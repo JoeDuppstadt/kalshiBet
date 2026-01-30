@@ -55,8 +55,6 @@ def parseSpreadData(sports_events, eventPrefix):
         if event.get("event_ticker", "").startswith(eventPrefix)
     ]
 
-    print(f"\nFound {len(filtered_events)} spread events starting with '{eventPrefix}'")
-
     if not filtered_events:
         print("→ No matching spread events found for this prefix.")
         return
@@ -69,11 +67,6 @@ def parseSpreadData(sports_events, eventPrefix):
         ticker = event.get("event_ticker", "—")
         title = event.get("title", "—")           # usually "Team A vs Team B"
         sub_title = event.get("sub_title", "—")   # often contains date / time
-
-        print(f"\n{'─' * 70}")
-        print(f"Game: {title}")
-        print(f"  Ticker:      {ticker}")
-        print(f"  Sub-title:   {sub_title}")
 
         consensus_market = find_consensus_spread(event)
 
@@ -101,16 +94,6 @@ def parseSpreadData(sports_events, eventPrefix):
             formatted_odds_dict['ticker'] = ticker
             formatted_odds_dict['spread'] = abs(strike)
             formatted_odds_list.append(formatted_odds_dict)
-
-            print(f"  → Current consensus spread: **{strike:+.1f}**{side_hint}")
-            print(f"     Yes ask ({strike:+.1f}):  {yes_prob:5.1%}  ({yes_ask_cents}¢)")
-            print(f"     No  ask ({-strike:+.1f}):  {no_prob:5.1%}  ({no_ask_cents}¢)")
-
-            # Optional: show implied edge / value
-            if abs(yes_prob - 0.5) < 0.05:
-                print("     → Very balanced line (sharp)")
-            elif yes_prob > 0.60 or no_prob > 0.60:
-                print("     → Line appears skewed / possible value on the other side")
         else:
             print("  → Could not determine a clear consensus spread line")
     return formatted_odds_list

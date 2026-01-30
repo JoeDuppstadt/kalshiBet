@@ -117,7 +117,6 @@ def get_nhl_odds():
                     team = o["name"]
                     point = o["point"]
                     price = o["price"]
-                    print(f"  Spread    : {team} {point:+.1f}  @ {price:+5}")
                     formatted_odds_dict['spread'] = abs(point)
             elif key == "totals":
                 for o in market["outcomes"]:
@@ -125,21 +124,13 @@ def get_nhl_odds():
                     point = o["point"]
                     price = o["price"]
                     formatted_odds_dict['overUnder'] = abs(point)
-                    print(f"  Total     : {name} {point:.1f}  @ {price:+5}")
         formatted_odds_list.append(formatted_odds_dict)
-
-    # Very useful during testing / quota management
-    print(f"Quota remaining this month: {response.headers.get('x-requests-remaining', 'unknown')}")
-    print(f"Quota used this month      : {response.headers.get('x-requests-used', 'unknown')}")
 
     saveKeyUsage(apiKeyName, response.headers.get('x-requests-remaining', 'unknown'))
 
     return formatted_odds_list
 
 def get_odds_nhl_data():
-    print(f"Fetching NHL odds from FanDuel only... ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
-    print(f"Regions: {REGIONS} | Markets: {MARKETS} | Odds: {ODDS_FORMAT}")
-    print("-" * 70)
 
     games = get_nhl_odds()
     return games

@@ -37,7 +37,6 @@ def fetch_all_sports_events(
 
     while True:
         page_count += 1
-        print(f"Fetching page {page_count}... (sports events so far: {len(all_sports_events)})")
 
         if cursor:
             params["cursor"] = cursor
@@ -78,7 +77,6 @@ def getSportsEvents():
     )
 
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    print(f"\nRetrieved {len(sports_events_today)} open sports events expiring on {today_str} (UTC).")
 
     if not sports_events_today:
         print("No open sports events found that expire today.")
@@ -86,8 +84,6 @@ def getSportsEvents():
         filename = f"../kalshi/kalshiAPI/kalshi_open_sports_events.json"
         with open(filename, "w") as f:
             json.dump(sports_events_today, f, indent=2)
-        print(f"\nSaved {len(sports_events_today)} events to {filename}")
-
         return sports_events_today
 
 
