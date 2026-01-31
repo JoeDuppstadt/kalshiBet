@@ -5,7 +5,7 @@ import os
 
 load_dotenv()  # loads .env into environment variables
 
-CSV_PATH = "oddsAPI/keyManagment/keysRemaining.csv"
+CSV_PATH = "/Users/josephduppstadt/Documents/kalshi/oddsAPI/keyManagment/keysRemaining.csv"
 
 def saveKeyUsage(key: str, keysRemaining: str) -> None:
     data: Dict[str, str] = {}
@@ -42,4 +42,3 @@ def returnAPIKey() -> Tuple[str, str]:
             for row in reader:
                 if int(row['keysRemaining']) > 2:
                     return row['key'], os.getenv(row['key'])
-    raise Exception("No API keys have keysRemaining > 0")

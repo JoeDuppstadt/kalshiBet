@@ -11,14 +11,10 @@ from oddsAPI.keyManagment.APIKeyManager import returnAPIKey, saveKeyUsage
 
 load_dotenv()  # loads .env into environment variables
 
-apiKeyName, API_KEY = returnAPIKey()
-
 REGIONS = "us"  # usually "us" for FanDuel
 MARKETS = "h2h,spreads,totals"  # moneyline, spread, total
 ODDS_FORMAT = "american"  # "american" or "decimal"
 DATE_FORMAT = "iso"
-
-# Only FanDuel
 BOOKMAKERS = "fanduel"
 
 # How many days ahead to look (API usually returns ~7–14 days worth)
@@ -64,7 +60,7 @@ TEAM_ABBRS = {
 def get_nba_odds():
     sport_key = "basketball_nba"
     formatted_odds_list = []
-
+    apiKeyName, API_KEY = returnAPIKey()
 
     curr_utc = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     eod_utc = (datetime.now(timezone.utc) + timedelta(hours=14)).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -124,6 +120,14 @@ def get_nba_odds():
                     point = o["point"]
                     price = o["price"]
                     formatted_odds_dict['overUnder'] = abs(point)
+            elif key == 'h2h':
+                name = []
+                price = []
+                for o in market["outcomes"]:
+                    name.append(TEAM_ABBRS[o["name"]])
+                    price.append(o["price"])
+                    formatted_odds_dict['outcomes'] = name
+                    formatted_odds_dict['outcomePrices'] = price
         formatted_odds_list.append(formatted_odds_dict)
 
     saveKeyUsage(apiKeyName, response.headers.get('x-requests-remaining', 'unknown'))
@@ -133,3 +137,5 @@ def get_nba_odds():
 def get_odds_nba_data():
     games = get_nba_odds()
     return games
+
+print(get_odds_nba_data())

@@ -5,7 +5,7 @@ from typing import Optional
 import requests
 from datetime import datetime, timedelta, timezone
 
-team_to_city = {
+nba_team_to_city = {
     "Raptors": "TOR",
     "Magic": "ORL",
     "Lakers":"LAL",
@@ -34,10 +34,9 @@ team_to_city = {
     "Mavericks":"DAL",
     "Rockets":"HOU",
     "Bulls":"CHI",
-
-    "Blue Jackets": "CBJ",
-    "Blackhawks": "CHI",
 }
+
+nhl_team_to_city = {}
 
 def current_time() -> str:
     # Current UTC time in ISO 8601 format with milliseconds
@@ -55,6 +54,7 @@ def convert_to_cities(matchup_str: str, mapping: dict) -> str:
     return result
 
 
+
 def decimal_prob_to_american(prob):
     """
     Convert a decimal probability (0.0 < prob < 1.0) to American odds.
@@ -69,9 +69,7 @@ def decimal_prob_to_american(prob):
     else:
         # Underdog: positive odds
         american = round(((1 - prob) / prob) * 100)
-        american = f"+{american}"
-
-    return str(american)
+    return int(american)
 
 def get_best_line(markets):
     # Initialize
@@ -97,13 +95,17 @@ class PolymarketAPI:
     def __init__(self):
         self.session = requests.Session()
 
-    def get_markets_by_sports_market_type(self, type: str, events):
+    def get_markets_by_sports_market_type(self, type: str, events, sport: str):
+        global game
         type_list = []
         formatted_odds_list = []
         for event in events:
             formatted_odds_dic = {}
             if event is not None:
-                game = convert_to_cities(event['title'], team_to_city)
+                if sport == 'nba':
+                    game = convert_to_cities(event['title'], nba_team_to_city)
+                elif sport == 'nhl':
+                    game = convert_to_cities(event['title'], nhl_team_to_city)
                 formatted_odds_dic["game"] = game
                 for market in event["markets"]:
                     if market['sportsMarketType'] == type:
@@ -117,10 +119,10 @@ class PolymarketAPI:
                         formatted_odds_dic["spread"] = bestMarket['line']
                     elif type == 'moneyline':
                         probs = json.loads(bestMarket['outcomePrices'])
-                        probs = [float(p) for p in probs]
+                        probs = [decimal_prob_to_american(float(p)) for p in probs]
                         formatted_odds_dic["outcomePrices"] = probs
                         names = json.loads(bestMarket['outcomes'])
-                        names = [team_to_city[n] for n in names]
+                        names = [nba_team_to_city[n] for n in names]
                         formatted_odds_dic["outcomes"] = names
 
 
@@ -147,8 +149,8 @@ class PolymarketAPI:
 if __name__ == "__main__":
     pm = PolymarketAPI()
     active_nba_events = pm.get_active_events('10345')
-    print(pm.get_markets_by_sports_market_type('spreads', active_nba_events))
-    #print(pm.get_markets_by_sports_market_type('moneyline', active_nba_events))
+    #print(pm.get_markets_by_sports_market_type('spreads', active_nba_events))
+    print(pm.get_markets_by_sports_market_type('moneyline', active_nba_events, 'nba'))
     #active_nhl_events = pm.get_active_events('10345')
     #print(pm.get_markets_by_sports_market_type('totals', active_nhl_events))
 

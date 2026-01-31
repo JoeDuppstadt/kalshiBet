@@ -8,8 +8,8 @@ from oddsAPI.nhl.getNHLData import get_odds_nhl_data
 from polymarketAPI.polymarketAPI import PolymarketAPI
 
 nbaSeason = True
-ncaambSeason = True
-nhlSeason = True
+ncaambSeason = False
+nhlSeason = False
 if __name__ == '__main__':
     sportingEvents = getSportsEvents()
     #parseOverUnderData(sportingEvents, "KXNFLTOTAL")
@@ -26,17 +26,18 @@ if __name__ == '__main__':
         detectGaps(NBA_kalshiOverUnderData, oddsNBAGames, 'nbaBasketball', 'overUnder')
         detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'nbaBasketball', 'spread')
 
+        print('\n------------------------------PolymarketNBA------------------------------------------------------------------------------------------------------------------')
         basketballId = '10345'
         pm = PolymarketAPI()
         active_nba_events = pm.get_active_events(basketballId)
+        #polyMarket_NBAOverUnder = pm.get_markets_by_sports_market_type('totals', active_nba_events, 'nba')
+        #polyMarket_NBASpreads = pm.get_markets_by_sports_market_type('spreads', active_nba_events, 'nba')
+        polyMarket_NBAMoneyline = pm.get_markets_by_sports_market_type('moneyline', active_nba_events, 'nba')
+        print(polyMarket_NBAMoneyline)
+        detectGaps(polyMarket_NBAMoneyline, oddsNBAGames, 'nbaBasketball', 'moneyline')
 
-        print('\n------------------------------PolymarketNBA------------------------------------------------------------------------------------------------------------------')
-        polyMarket_NBAOverUnder = pm.get_markets_by_sports_market_type('totals', active_nba_events)
-        polyMarket_NBASpreads = pm.get_markets_by_sports_market_type('spreads', active_nba_events)
-        print(polyMarket_NBAOverUnder)
-        print(polyMarket_NBASpreads)
-        detectGaps(polyMarket_NBAOverUnder, oddsNBAGames, 'nbaBasketball', 'overUnder')
-        detectGaps(polyMarket_NBASpreads, oddsNBAGames, 'nbaBasketball', 'spread')
+        #detectGaps(polyMarket_NBAOverUnder, oddsNBAGames, 'nbaBasketball', 'overUnder') # o/u and spreads not supportedyet
+        #detectGaps(polyMarket_NBASpreads, oddsNBAGames, 'nbaBasketball', 'spread')
 
         if nhlSeason:
             NHL_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNHLTOTAL")
@@ -53,8 +54,8 @@ if __name__ == '__main__':
             print('\n------------------------------PolymarketNHL------------------------------------------------------------------------------------------------------------------')
             nhlId = '10346'
             active_nhl_events = pm.get_active_events(nhlId)
-            polyMarket_NHLOverUnder = pm.get_markets_by_sports_market_type('totals', active_nhl_events)
-            polyMarket_NHLSpreads = pm.get_markets_by_sports_market_type('spreads', active_nhl_events)
+            polyMarket_NHLOverUnder = pm.get_markets_by_sports_market_type('totals', active_nhl_events, 'nhl')
+            polyMarket_NHLSpreads = pm.get_markets_by_sports_market_type('spreads', active_nhl_events, 'nhl')
             print(polyMarket_NHLOverUnder)
             print(polyMarket_NHLSpreads)
             detectGaps(polyMarket_NHLOverUnder, oddsNHLGames, 'hockey', 'overUnder')
