@@ -1,4 +1,3 @@
-from kalshiAPI.helpers.createOrder import createOverUnderOrder
 
 defaultGap = 2
 nbaBasketballOverUnderGap = 2

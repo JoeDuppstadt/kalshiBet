@@ -1,7 +1,8 @@
-from kalshiAPI.generalAPI.getSportingEvents import getSportsEvents
+from helpers.find_arbitrage import find_arbitrage
 from kalshiAPI.helpers.OverUnderEvents import parseOverUnderData
 from kalshiAPI.helpers.SpreadEvents import parseSpreadData
 from kalshiAPI.helpers.detectGaps import detectGaps
+from kalshiAPI.kalshiAPI import kalshiAPI
 from oddsAPI.nba.getNBAData import get_odds_nba_data
 from oddsAPI.ncaamb.getNCAAMBData import get_odds_ncaamb_data
 from oddsAPI.nhl.getNHLData import get_odds_nhl_data
@@ -11,15 +12,28 @@ nbaSeason = True
 ncaambSeason = False
 nhlSeason = False
 if __name__ == '__main__':
-    sportingEvents = getSportsEvents()
-    #parseOverUnderData(sportingEvents, "KXNFLTOTAL")
-    #parseNFLSpreadData(sportingEvents)
+    kalshi = kalshiAPI()
+    pm = PolymarketAPI()
+    sportingEvents = kalshi.fetch_all_sports_events(
+        limit=1000,
+        status="open",
+        with_nested_markets=True,
+        with_milestones=False,
+    )
 
     # NBA
     if nbaSeason:
-        NBA_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNBATOTAL")
-        NBA_kalshiSpreadData = parseSpreadData(sportingEvents, "KXNBASPREAD")
+        #find arbitrage before anything else
+        basketballId = '10345'
+        active_nba_events = pm.get_active_events(basketballId)
+        polyMarket_NBAMoneyline = pm.get_markets_by_sports_market_type('moneyline', active_nba_events, 'nba')
+        NBA_kalshiMoneylineData = kalshi.get_markets_by_sports_market_type('moneyline', sportingEvents, 'nba', 'KXNBAGAME')
+        print(find_arbitrage(NBA_kalshiMoneylineData, polyMarket_NBAMoneyline))
+
+        NBA_kalshiOverUnderData = kalshi.parseOverUnderData(sportingEvents, "KXNBATOTAL")
+        NBA_kalshiSpreadData = kalshi.parseSpreadData(sportingEvents, "KXNBASPREAD")
         oddsNBAGames = get_odds_nba_data()
+
         print('\n------------------------------KalshiNBA------------------------------------------------------------------------------------------------------------------')
         print(NBA_kalshiOverUnderData)
         print(oddsNBAGames)
@@ -27,17 +41,9 @@ if __name__ == '__main__':
         detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'nbaBasketball', 'spread')
 
         print('\n------------------------------PolymarketNBA------------------------------------------------------------------------------------------------------------------')
-        basketballId = '10345'
-        pm = PolymarketAPI()
-        active_nba_events = pm.get_active_events(basketballId)
-        #polyMarket_NBAOverUnder = pm.get_markets_by_sports_market_type('totals', active_nba_events, 'nba')
-        #polyMarket_NBASpreads = pm.get_markets_by_sports_market_type('spreads', active_nba_events, 'nba')
-        polyMarket_NBAMoneyline = pm.get_markets_by_sports_market_type('moneyline', active_nba_events, 'nba')
         print(polyMarket_NBAMoneyline)
         detectGaps(polyMarket_NBAMoneyline, oddsNBAGames, 'nbaBasketball', 'moneyline')
 
-        #detectGaps(polyMarket_NBAOverUnder, oddsNBAGames, 'nbaBasketball', 'overUnder') # o/u and spreads not supportedyet
-        #detectGaps(polyMarket_NBASpreads, oddsNBAGames, 'nbaBasketball', 'spread')
 
         if nhlSeason:
             NHL_kalshiOverUnderData = parseOverUnderData(sportingEvents, "KXNHLTOTAL")

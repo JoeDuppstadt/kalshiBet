@@ -138,4 +138,3 @@ def get_odds_nba_data():
     games = get_nba_odds()
     return games
 
-print(get_odds_nba_data())

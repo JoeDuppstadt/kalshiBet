@@ -5,6 +5,8 @@ from typing import Optional
 import requests
 from datetime import datetime, timedelta, timezone
 
+from helpers.decimal_to_america_odds import decimal_prob_to_american
+
 nba_team_to_city = {
     "Raptors": "TOR",
     "Magic": "ORL",
@@ -53,23 +55,6 @@ def convert_to_cities(matchup_str: str, mapping: dict) -> str:
     result = result.replace('vs.', '@')
     return result
 
-
-
-def decimal_prob_to_american(prob):
-    """
-    Convert a decimal probability (0.0 < prob < 1.0) to American odds.
-    Returns string like '+150' or '-200'
-    """
-    if not 0 < prob < 1:
-        return "Invalid probability"
-
-    if prob > 0.5:
-        # Favorite: negative odds
-        american = -round((prob / (1 - prob)) * 100)
-    else:
-        # Underdog: positive odds
-        american = round(((1 - prob) / prob) * 100)
-    return int(american)
 
 def get_best_line(markets):
     # Initialize
