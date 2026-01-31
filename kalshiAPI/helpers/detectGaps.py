@@ -1,22 +1,21 @@
 from kalshiAPI.helpers.createOrder import createOverUnderOrder
 
 defaultGap = 2
-basketballOverUnderGap = 2
-basketballSpreadGap = 2
+nbaBasketballOverUnderGap = 2
+nbaBasketballSpreadGap = 2
 hockeyOverUnderGap = 1
 hockeySpreadGap = 1
+ncaambGap = 3
 
-def determineGap(sport, type):
-    if sport == "basketball" and type == "overUnder":
-        return basketballOverUnderGap
-    elif sport == "basketball" and type == "spread":
-        return basketballOverUnderGap
-    elif sport == "hockey" and type == "overUnder":
-        return hockeyOverUnderGap
-    elif sport == "hockey" and type == "spread":
-        return hockeySpreadGap
-    else:
-        return defaultGap
+def determineGap(sport: str, type: str) -> int:
+    return {
+        ("nbaBasketball", "overUnder"): nbaBasketballOverUnderGap,
+        ("nbaBasketball", "spread"): nbaBasketballSpreadGap,
+        ("ncaambBasketball", "spread"): ncaambGap,
+        ("ncaambBasketball", "overUnder"): ncaambGap,
+        ("hockey", "overUnder"): hockeyOverUnderGap,
+        ("hockey", "spread"): hockeySpreadGap,
+    }.get((sport, type), defaultGap)
 
 
 def detectGaps(kalshi, oddsAPI, sport, type):
