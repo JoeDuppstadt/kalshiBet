@@ -73,7 +73,7 @@ def get_nba_odds():
         "oddsFormat": ODDS_FORMAT,
         "dateFormat": DATE_FORMAT,
         "bookmakers": BOOKMAKERS,
-        "commenceTimeFrom": curr_utc,
+        #"commenceTimeFrom": curr_utc,
         "commenceTimeTo":eod_utc
     }
 

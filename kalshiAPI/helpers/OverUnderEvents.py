@@ -53,7 +53,6 @@ def parseOverUnderData(sports_events, eventPrefix):
         event for event in sports_events
         if event.get("event_ticker", "").startswith(eventPrefix)
     ]
-
     if filtered_events:
         for event in filtered_events:
             formatted_odds_dict = {}
@@ -71,7 +70,6 @@ def parseOverUnderData(sports_events, eventPrefix):
                 strike = consensus_market["floor_strike"]
                 yes_prob = consensus_market["yes_ask"] / 100.0
                 no_prob = consensus_market["no_ask"] / 100.0
-
                 formatted_odds_dict['game'] = sub_title
                 formatted_odds_dict['ticker'] = ticker
                 formatted_odds_dict['overUnder'] = strike

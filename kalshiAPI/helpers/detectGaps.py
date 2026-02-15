@@ -5,7 +5,7 @@ nbaBasketballSpreadGap = 2
 nbaBasketballmoneyline = 50
 hockeyOverUnderGap = 1
 hockeySpreadGap = 1
-ncaambGap = 3
+ncaambGap = 2
 
 def determineGap(sport: str, type: str) -> int:
     return {
@@ -20,7 +20,9 @@ def determineGap(sport: str, type: str) -> int:
 
 
 def detectGaps(kalshi, oddsAPI, sport, type):
-    global oddsMetric, kalshiMetric, kalshiOutcomes, kalshiOutcomePrices, oddsOutcomes, oddsOutcomePrices
+    global oddsMetric, kalshiMetric, kalshiOutcomes, kalshiOutcomePrices, difference
+    oddsOutcomes = None
+    oddsOutcomePrices = None
     for kalshiGame in kalshi:
         matched = False
         game_name = kalshiGame["game"]
@@ -37,25 +39,32 @@ def detectGaps(kalshi, oddsAPI, sport, type):
             if odds_game.get("game") == game_name:
                 matched = True
                 if type == "overUnder":
-                    oddsMetric = odds_game["overUnder"]
+                    try:
+                        oddsMetric = odds_game["overUnder"]
+                    except Exception as e:
+                        print(f'No O/U found for: {game_name}')
                 elif type == "spread":
                     try:
                         oddsMetric = odds_game["spread"]
                     except Exception as e:
                         print(f'No spread found for: {game_name}')
                 elif type == "moneyline":
-                    oddsOutcomePrices = odds_game["outcomePrices"]
-                    oddsOutcomes = odds_game["outcomes"]
+                    try:
+                        oddsOutcomePrices = odds_game["outcomePrices"]
+                        oddsOutcomes = odds_game["outcomes"]
+                    except Exception as e:
+                        print(f'No moneyline found for: {game_name}')
 
                 if type == "moneyline":
-                    if kalshiOutcomes[0] == oddsOutcomes[0]:
-                        difference = abs(kalshiOutcomePrices[0] - oddsOutcomePrices[0])
-                        kalshiMetric = kalshiOutcomePrices[0]
-                        oddsMetric = oddsOutcomePrices[0]
-                    elif kalshiOutcomes[0] == oddsOutcomes[1]: # handles a case where the teams are out of order
-                        difference = abs(kalshiOutcomePrices[0] - oddsOutcomePrices[1])
-                        kalshiMetric = kalshiOutcomePrices[0]
-                        oddsMetric = oddsOutcomePrices[1]
+                    if kalshiOutcomes and oddsOutcomes is not None:
+                        if kalshiOutcomes[0] == oddsOutcomes[0]:
+                            difference = abs(kalshiOutcomePrices[0] - oddsOutcomePrices[0])
+                            kalshiMetric = kalshiOutcomePrices[0]
+                            oddsMetric = oddsOutcomePrices[0]
+                        elif kalshiOutcomes[0] == oddsOutcomes[1]: # handles a case where the teams are out of order
+                            difference = abs(kalshiOutcomePrices[0] - oddsOutcomePrices[1])
+                            kalshiMetric = kalshiOutcomePrices[0]
+                            oddsMetric = oddsOutcomePrices[1]
                 else:
                     difference = abs(abs(kalshiMetric) - abs(oddsMetric))
 

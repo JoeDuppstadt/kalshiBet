@@ -36,6 +36,8 @@ nba_team_to_city = {
     "Mavericks":"DAL",
     "Rockets":"HOU",
     "Bulls":"CHI",
+    "Bucks":"MIL",
+    "Thunder":"OKC",
 }
 
 nhl_team_to_city = {}
