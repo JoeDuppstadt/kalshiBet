@@ -1,4 +1,3 @@
-
 defaultGap = 2
 nbaBasketballOverUnderGap = 2
 nbaBasketballSpreadGap = 2
@@ -6,6 +5,7 @@ nbaBasketballmoneyline = 50
 hockeyOverUnderGap = 1
 hockeySpreadGap = 1
 ncaambGap = 2
+ncaaBaseballMoneylineGap = 150
 
 def determineGap(sport: str, type: str) -> int:
     return {
@@ -14,6 +14,7 @@ def determineGap(sport: str, type: str) -> int:
         ("nbaBasketball", "moneyline"): nbaBasketballmoneyline,
         ("ncaambBasketball", "spread"): ncaambGap,
         ("ncaambBasketball", "overUnder"): ncaambGap,
+        ("ncaaBaseball", "moneyline"): ncaaBaseballMoneylineGap,
         ("hockey", "overUnder"): hockeyOverUnderGap,
         ("hockey", "spread"): hockeySpreadGap,
     }.get((sport, type), defaultGap)

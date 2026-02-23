@@ -9,6 +9,7 @@ from kalshi_python_sync import Configuration, KalshiClient, CreateOrderRequest
 import uuid
 from dotenv import load_dotenv
 
+from helpers.decimal_to_america_odds import decimal_prob_to_american
 from kalshiAPI.helpers.SpreadEvents import parseSpreadData
 #from helpers.SpreadEvents import parseSpreadData
 
@@ -91,7 +92,22 @@ class kalshiAPI:
 
     def parseMoneyLineData(self, sportingEvents, sportLeague, eventPrefix):
         events = self.get_markets_by_sports_market_type('moneyline', sportingEvents, sportLeague, eventPrefix)
-        return events
+
+        formatted_odds_list = []
+        for event in events:
+            game_json = {}
+            outcomes = []
+            outcomePrices = []
+
+            game_json['game'] = event['title']
+            for market in event['markets']:
+                outcomes.append(market['yes_sub_title'])
+                outcomePrices.append(decimal_prob_to_american(int(market['yes_ask']) / 100))
+
+            game_json['outcomes'] = outcomes
+            game_json['outcomePrices'] = outcomePrices
+            formatted_odds_list.append(game_json)
+        return formatted_odds_list
 
 
     def parseSpreadData(self, sportingEvents, eventPrefix):

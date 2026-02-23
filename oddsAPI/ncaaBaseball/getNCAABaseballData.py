@@ -16,7 +16,14 @@ BOOKMAKERS = "fanduel"
 DAYS_AHEAD = 0
 
 TEAM_ABBRS = {
-
+    "BYU Cougars" : "BYU",
+    "UC Riverside Highlanders" : "UC Riverside",
+    "Loyola Marymount Lions" : "Loyola Marymount",
+    "TCU Horned Frogs" : "TCU",
+    "Fresno St Bulldogs" : "Fresno State",
+    "Pepperdine Waves" : "Pepperdine",
+    "Cal Poly Mustangs" : "Cal Poly Mustangs - need to update",
+    "Washington St Cougars" : "Washington St Cougars - need to update",
 }
 
 # ────────────────────────────────────────────────
@@ -59,11 +66,11 @@ def get_ncaa_baseball_odds():
 
         home_abbr = TEAM_ABBRS.get(game["home_team"], game["home_team"])
         away_abbr = TEAM_ABBRS.get(game["away_team"], game["away_team"])
-        game_name = away_abbr + ' @ ' + home_abbr
+        game_name = away_abbr + ' vs ' + home_abbr
         formatted_odds_dict['game'] = game_name
 
         if not game["bookmakers"]:
-            print("  (no FanDuel odds available for this game)")
+            print(f'no FanDuel odds available for {game_name}')
             continue
 
         book = game["bookmakers"][0]  # only one

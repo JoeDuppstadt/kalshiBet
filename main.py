@@ -4,12 +4,14 @@ from kalshiAPI.helpers.SpreadEvents import parseSpreadData
 from kalshiAPI.helpers.detectGaps import detectGaps
 from kalshiAPI.kalshiAPI import kalshiAPI
 from oddsAPI.nba.getNBAData import get_odds_nba_data
+from oddsAPI.ncaaBaseball.getNCAABaseballData import get_odds_ncaa_baseball_data
 from oddsAPI.ncaamb.getNCAAMBData import get_odds_ncaamb_data
 from oddsAPI.nhl.getNHLData import get_odds_nhl_data
 from polymarketAPI.polymarketAPI import PolymarketAPI
 
-nbaSeason = True
+nbaSeason = False
 mlbSeason = False
+ncaaBaseball = True
 ncaambSeason = False
 nhlSeason = False
 if __name__ == '__main__':
@@ -32,11 +34,19 @@ if __name__ == '__main__':
         NBA_kalshiSpreadData = kalshi.parseSpreadData(sportingEvents, "KXNBASPREAD")
         oddsNBAGames = get_odds_nba_data()
 
-        print('\n------------------------------KalshiNBA------------------------------------------------------------------------------------------------------------------')
+        print('\n------------------------------Kalshi NBA------------------------------------------------------------------------------------------------------------------')
         print(NBA_kalshiOverUnderData)
         print(oddsNBAGames)
         detectGaps(NBA_kalshiOverUnderData, oddsNBAGames, 'nbaBasketball', 'overUnder')
         detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'nbaBasketball', 'spread')
+
+    if ncaaBaseball:
+        print('\n------------------------------Kalshi NCAA Baseball------------------------------------------------------------------------------------------------------------------')
+        oddsNCAABaseballGames = get_odds_ncaa_baseball_data()
+        print(oddsNCAABaseballGames)
+        NCAABaseball_kalshiMoneylineData = kalshi.parseMoneyLineData(sportingEvents, 'ncaa_baseball', "KXNCAABBGAME")
+
+        detectGaps(NCAABaseball_kalshiMoneylineData, oddsNCAABaseballGames, 'ncaaBaseball', 'moneyline')
 
     if mlbSeason:
         MLB_kalshiMoneylineData = kalshi.parseMoneyLineData(sportingEvents,'mlb', "KXMLBSTGAME")

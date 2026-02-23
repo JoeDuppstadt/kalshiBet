@@ -13,6 +13,3 @@ def decimal_prob_to_american(prob):
         # Underdog: positive odds
         american = round(((1 - prob) / prob) * 100)
     return int(american)
-
-
-
