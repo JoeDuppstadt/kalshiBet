@@ -1,14 +1,17 @@
-import sys
+import os
 import time
-
-import requests
-import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone, timedelta
+import base64
+import requests
+from kalshi_python_sync import Configuration, KalshiClient, CreateOrderRequest
+import uuid
+from dotenv import load_dotenv
 
-from kalshiAPI.helpers.OverUnderEvents import parseOverUnderData
 from kalshiAPI.helpers.SpreadEvents import parseSpreadData
+#from helpers.SpreadEvents import parseSpreadData
 
+ENVIRONMENT = 'DEV'
 
 def is_expiring_today(expiration_str: Optional[str]) -> bool:
     """
@@ -41,7 +44,6 @@ def is_expiring_today(expiration_str: Optional[str]) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 class kalshiAPI:
     BASE_URL = "https://api.elections.kalshi.com"
 
@@ -69,8 +71,6 @@ class kalshiAPI:
             else:
                 print(f"Yes odds for {game_name} are greater than 70 or less than 30")
         return formatted_odds_list
-
-
 
     def get_markets_by_sports_market_type(self, type: str, sports_events, sport: str, eventPrefix: str):
         filtered_events = [
@@ -143,7 +143,6 @@ class kalshiAPI:
         print(f"\nDone! Total sports events retrieved that expire TODAY: {len(all_sports_events)}")
         return all_sports_events
 
-
     def fetch_all_crypto_events(self, limit: int = 1000, status: Optional[str] = "open", min_close_ts: Optional[int] = None, with_nested_markets: bool = True, with_milestones: bool = False) -> List[Dict[str, Any]]:
         SPORTS_CATEGORY = "Crypto"
 
@@ -191,15 +190,52 @@ class kalshiAPI:
             if not cursor:
                 break
         return all_crypto_events
+
+    def createAPIClient(self):
+        load_dotenv()
+
+        host = None
+        private_key_path = None
+        api_key = None
+
+        if ENVIRONMENT == 'DEV':
+            host = "https://demo-api.kalshi.co/trade-api/v2"
+            private_key_path = "/Users/josephduppstadt/Documents/kalshi/kalshiAPI/DEV_kalshikey.pem"
+            api_key = os.getenv("DEV_KALSHI_API_KEY")
+        elif ENVIRONMENT == 'PROD':
+            host = "https://api.kalshi.com"
+            private_key_path = "/Users/josephduppstadt/Documents/kalshi/kalshiAPI/PROD_kalshikey.pem"
+            api_key = os.getenv("PROD_KALSHI_API_KEY")
+
+        config = Configuration(
+            host=host
+        )
+
+        with open(private_key_path, "r") as f:
+            private_key = f.read()
+
+        config.api_key_id = api_key
+        config.private_key_pem = private_key
+
+        return KalshiClient(config)
 # Example usage:
 if __name__ == "__main__":
     kalshi = kalshiAPI()
-    sportingEvents = kalshi.fetch_all_sports_events(
-        limit=1000,
-        status="open",
-        with_nested_markets=True,
-        with_milestones=False,
-    )
-    NBA_overUnderEvents = kalshi.get_markets_by_sports_market_type('overUnder', sportingEvents, 'nba', 'KXNBATOTAL')
-    print(kalshi.get_best_odds(NBA_overUnderEvents))
 
+    client = kalshi.createAPIClient()
+
+    try:
+        response = client.create_order(
+            ticker="KXBTC15M-26FEB221630",
+            action="buy",
+            side="yes",
+            count=1,
+            type="limit",
+            yes_price=50,
+            client_order_id=str(uuid.uuid4())
+        )
+        order_id = getattr(response, 'order_id', getattr(response.order, 'order_id', 'Unknown'))
+        print(f"Order placed! Order ID: {order_id}")
+
+    except Exception as e:
+        print(f"Failed to place order: {e}")

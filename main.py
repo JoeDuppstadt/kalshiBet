@@ -8,7 +8,7 @@ from oddsAPI.ncaamb.getNCAAMBData import get_odds_ncaamb_data
 from oddsAPI.nhl.getNHLData import get_odds_nhl_data
 from polymarketAPI.polymarketAPI import PolymarketAPI
 
-nbaSeason = False
+nbaSeason = True
 ncaambSeason = True
 nhlSeason = False
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+import csv
 import time
 
 from kalshiAPI.kalshiAPI import kalshiAPI
@@ -5,6 +6,8 @@ import requests
 from datetime import datetime, timedelta, timezone
 import pytz
 from concurrent.futures import ThreadPoolExecutor
+
+
 
 def minutes_to_next_quarter():
     now = datetime.now()
@@ -45,7 +48,7 @@ def get_coinbase_bitcoin_prices():
     data = r.json()
 
     # Coinbase returns newest first → reverse it
-    data.reverse()
+    #data.reverse()
 
     candles = []
     for c in data:
@@ -120,21 +123,33 @@ def get_prices(ticker):
 
     return current_bitcoin_price, kalshi_market
 
+def save_results_to_csv(ticker: str, prediction: str, result: str, yes_bid: str, no_bid: str, ticker1, ticker2, ticker3):
+    outcome = [
+        [ticker, prediction, result, yes_bid, no_bid, ticker1, ticker2, ticker3],
+    ]
+    with open("/Users/josephduppstadt/Documents/kalshi/kalshiAPI/crypto/outcomes.csv", "a", newline="",
+              encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerows(outcome)
+
 def execute_order(ticker, yes_or_no):
     # code to execute order
 
     #check status
     finalized = False
     while not finalized:
-        time.sleep(30)
+        time.sleep(2)
         market = get_kalshi_bitcoin_market(ticker)
 
         if market['status'] == 'finalized':
             finalized = True
             if yes_or_no == market['result']:
                 print("won")
+                return market['result']
             else:
                 print("lost")
+                return market['result']
+    return None
 
 
 def start():
@@ -144,34 +159,47 @@ def start():
 
     # pause execution until the final minute of the market
     while minutes >= 3:
-        print(f'Minutes remaining: {minutes} | Sleeping for 30 seconds')
-        time.sleep(30)
         minutes = minutes_to_next_quarter()
+        print(f'Minutes remaining: {minutes} | Sleeping for 15 seconds')
+        time.sleep(15)
     order_found = False
 
     # if there is 2 minutes left before market close. Start pooling
-    while minutes < 3 and minutes != 15:
+    while minutes < 3 and minutes != 0:
         minutes = minutes_to_next_quarter()
         current_bitcoin_price, kalshi_market = get_prices(ticker)
 
-        if kalshi_market['yes_bid'] >= 99 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
+        print(ticker)
+        yes_bid = kalshi_market['yes_bid']
+        print(f'yes_bid: {yes_bid}')
+        no_bid = kalshi_market['no_bid']
+        print(f'no_bid: {no_bid}')
+        print(current_bitcoin_price[0]['open'])
+        print(current_bitcoin_price[1]['open'])
+        print(current_bitcoin_price[2]['open'])
+        print()
+
+        if 95 <= kalshi_market['yes_bid'] < 99 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
             'open'] > \
                 current_bitcoin_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
             print("Execute yes buy")
-            execute_order(ticker, 'yes')
+            result = execute_order(ticker, 'yes')
+            save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid'], kalshi_market['no_bid'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
             order_found = True
             break
 
-        elif kalshi_market['no_bid'] >= 99 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
+        elif 95 <= kalshi_market['no_bid'] < 99 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
             'open'] < \
                 current_bitcoin_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
             print("Execute no buy")
-            execute_order(ticker, 'yes')
+            result = execute_order(ticker, 'no')
+            save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid'], kalshi_market['no_bid'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+
             order_found = True
             break
-        time.sleep(2)
+        time.sleep(1)
     if not order_found:
         print("No order was found:")
         print(ticker)
@@ -187,4 +215,4 @@ def start():
 
 if __name__ == "__main__":
     while True:
-        start()
+         start()
