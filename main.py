@@ -9,7 +9,7 @@ from oddsAPI.nhl.getNHLData import get_odds_nhl_data
 from polymarketAPI.polymarketAPI import PolymarketAPI
 
 nbaSeason = True
-ncaambSeason = True
+ncaambSeason = False
 nhlSeason = False
 if __name__ == '__main__':
     kalshi = kalshiAPI()

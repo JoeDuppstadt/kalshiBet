@@ -8,10 +8,8 @@ from kalshi_python_sync import Configuration, KalshiClient, CreateOrderRequest
 import uuid
 from dotenv import load_dotenv
 
-from kalshiAPI.helpers.SpreadEvents import parseSpreadData
-#from helpers.SpreadEvents import parseSpreadData
-
-ENVIRONMENT = 'DEV'
+#from kalshiAPI.helpers.SpreadEvents import parseSpreadData
+from helpers.SpreadEvents import parseSpreadData
 
 def is_expiring_today(expiration_str: Optional[str]) -> bool:
     """
@@ -191,18 +189,22 @@ class kalshiAPI:
                 break
         return all_crypto_events
 
+    def closeOrder(self, client, orderId: str):
+        client.closeOrder(orderId)
+
     def createAPIClient(self):
         load_dotenv()
 
         host = None
         private_key_path = None
         api_key = None
+        environment = os.getenv('ENVIRONMENT')
 
-        if ENVIRONMENT == 'DEV':
+        if environment == 'DEV':
             host = "https://demo-api.kalshi.co/trade-api/v2"
             private_key_path = "/Users/josephduppstadt/Documents/kalshi/kalshiAPI/DEV_kalshikey.pem"
             api_key = os.getenv("DEV_KALSHI_API_KEY")
-        elif ENVIRONMENT == 'PROD':
+        elif environment == 'PROD':
             host = "https://api.kalshi.com"
             private_key_path = "/Users/josephduppstadt/Documents/kalshi/kalshiAPI/PROD_kalshikey.pem"
             api_key = os.getenv("PROD_KALSHI_API_KEY")
@@ -226,7 +228,7 @@ if __name__ == "__main__":
 
     try:
         response = client.create_order(
-            ticker="KXBTC15M-26FEB221630",
+            ticker="KXMARSVRAIL-50",
             action="buy",
             side="yes",
             count=1,

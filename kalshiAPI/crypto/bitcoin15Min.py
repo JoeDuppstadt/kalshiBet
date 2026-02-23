@@ -138,8 +138,13 @@ def execute_order(ticker, yes_or_no):
     #check status
     finalized = False
     while not finalized:
-        time.sleep(2)
+        time.sleep(1)
         market = get_kalshi_bitcoin_market(ticker)
+
+        # odds have significantly shifted. Cut losses and close position
+        if (market['yes_bid'] < 75 or market['yes_bid'] > 25) and market['status'] != 'finalized':
+            #code to cancel order
+            print('odds have moved significantly')
 
         if market['status'] == 'finalized':
             finalized = True
