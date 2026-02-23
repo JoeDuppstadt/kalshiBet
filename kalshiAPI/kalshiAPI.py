@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from typing import Dict, Any, Optional, List
@@ -8,8 +9,8 @@ from kalshi_python_sync import Configuration, KalshiClient, CreateOrderRequest
 import uuid
 from dotenv import load_dotenv
 
-#from kalshiAPI.helpers.SpreadEvents import parseSpreadData
-from helpers.SpreadEvents import parseSpreadData
+from kalshiAPI.helpers.SpreadEvents import parseSpreadData
+#from helpers.SpreadEvents import parseSpreadData
 
 def is_expiring_today(expiration_str: Optional[str]) -> bool:
     """
@@ -88,6 +89,11 @@ class kalshiAPI:
         events = self.get_markets_by_sports_market_type('overUnder', sportingEvents, sportLeague, eventPrefix)
         return self.get_best_odds(events, 'overUnder')
 
+    def parseMoneyLineData(self, sportingEvents, sportLeague, eventPrefix):
+        events = self.get_markets_by_sports_market_type('moneyline', sportingEvents, sportLeague, eventPrefix)
+        return events
+
+
     def parseSpreadData(self, sportingEvents, eventPrefix):
         return parseSpreadData(sportingEvents, "KXNBASPREAD")
 
@@ -139,6 +145,13 @@ class kalshiAPI:
                 break
 
         print(f"\nDone! Total sports events retrieved that expire TODAY: {len(all_sports_events)}")
+
+        try:
+            with open('/Users/josephduppstadt/Documents/kalshi/kalshiAPI/kalshi_open_sports_events.json', 'w', encoding='utf-8') as output_file:
+                json.dump(all_sports_events, output_file, ensure_ascii=False, indent=4)
+        except IOError as e:
+            print(f"Error writing to file: {e}")
+
         return all_sports_events
 
     def fetch_all_crypto_events(self, limit: int = 1000, status: Optional[str] = "open", min_close_ts: Optional[int] = None, with_nested_markets: bool = True, with_milestones: bool = False) -> List[Dict[str, Any]]:

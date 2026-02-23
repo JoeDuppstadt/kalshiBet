@@ -9,6 +9,7 @@ from oddsAPI.nhl.getNHLData import get_odds_nhl_data
 from polymarketAPI.polymarketAPI import PolymarketAPI
 
 nbaSeason = True
+mlbSeason = False
 ncaambSeason = False
 nhlSeason = False
 if __name__ == '__main__':
@@ -37,6 +38,8 @@ if __name__ == '__main__':
         detectGaps(NBA_kalshiOverUnderData, oddsNBAGames, 'nbaBasketball', 'overUnder')
         detectGaps(NBA_kalshiSpreadData, oddsNBAGames, 'nbaBasketball', 'spread')
 
+    if mlbSeason:
+        MLB_kalshiMoneylineData = kalshi.parseMoneyLineData(sportingEvents,'mlb', "KXMLBSTGAME")
 
 
     if nhlSeason:
