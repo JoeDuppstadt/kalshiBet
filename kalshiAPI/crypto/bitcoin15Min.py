@@ -25,10 +25,13 @@ def get_kalshi_bitcoin_market(ticker) -> dict:
     market = response['markets'][0]
 
     formatted_market['strike_price'] = market['floor_strike']
-    formatted_market['yes_bid'] = market['yes_bid']
-    formatted_market['no_bid'] = market['no_bid']
+    formatted_market['yes_bid_dollars'] = market['yes_bid_dollars']
+    formatted_market['no_bid_dollars'] = market['no_bid_dollars']
+    formatted_market['yes_ask_dollars'] = market['yes_ask_dollars']
+    formatted_market['no_ask_dollars'] = market['no_ask_dollars']
     formatted_market['status'] = market['status']
     formatted_market['result'] = market['result']
+    formatted_market['ticker'] = market['ticker']
 
     return formatted_market
 
@@ -132,19 +135,20 @@ def save_results_to_csv(ticker: str, prediction: str, result: str, yes_bid: str,
         writer = csv.writer(f)
         writer.writerows(outcome)
 
-def execute_order(ticker, yes_or_no):
-    # code to execute order
 
-    #check status
-    finalized = False
+def execute_order(ticker, yes_or_no, price, kalshi):
+    response = kalshi.place_order(ticker, yes_or_no, price)
+    print(response)
+    # check status
+    finalized = None
     while not finalized:
         time.sleep(1)
-        market = get_kalshi_bitcoin_market(ticker)
-
-        # odds have significantly shifted. Cut losses and close position
-        if (market['yes_bid'] < 75 or market['yes_bid'] > 25) and market['status'] != 'finalized':
-            #code to cancel order
-            print('odds have moved significantly')
+        market = get_kalshi_bitcoin_market(ticker.split('-', 2)[0] + '-' + ticker.split('-', 2)[1])
+        print(market)
+        if yes_or_no == 'yes' and float(market['yes_bid_dollars']) < .75 and market['status'] != 'finalized':
+            print('yes odds have moved significantly')
+        elif yes_or_no == 'no' and float(market['no_bid_dollars']) < .75 and market['status'] != 'finalized':
+            print('no odds have moved significantly')
 
         if market['status'] == 'finalized':
             finalized = True
@@ -154,6 +158,8 @@ def execute_order(ticker, yes_or_no):
             else:
                 print("lost")
                 return market['result']
+
+
     return None
 
 
@@ -167,6 +173,8 @@ def start():
         minutes = minutes_to_next_quarter()
         print(f'Minutes remaining: {minutes} | Sleeping for 15 seconds')
         time.sleep(15)
+
+
     order_found = False
 
     # if there is 2 minutes left before market close. Start pooling
@@ -175,32 +183,30 @@ def start():
         current_bitcoin_price, kalshi_market = get_prices(ticker)
 
         print(ticker)
-        yes_bid = kalshi_market['yes_bid']
-        print(f'yes_bid: {yes_bid}')
-        no_bid = kalshi_market['no_bid']
-        print(f'no_bid: {no_bid}')
+        print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
+        print(f'no_bid: {kalshi_market['no_bid_dollars']}')
         print(current_bitcoin_price[0]['open'])
         print(current_bitcoin_price[1]['open'])
         print(current_bitcoin_price[2]['open'])
         print()
 
-        if 95 <= kalshi_market['yes_bid'] < 99 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
+        if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
             'open'] > \
                 current_bitcoin_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
             print("Execute yes buy")
-            result = execute_order(ticker, 'yes')
-            save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid'], kalshi_market['no_bid'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+            result = execute_order(kalshi_market['ticker'], 'yes', kalshi_market['yes_bid_dollars'], kalshi)
+            save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
             order_found = True
             break
 
-        elif 95 <= kalshi_market['no_bid'] < 99 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
+        elif .985 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
             'open'] < \
                 current_bitcoin_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
             print("Execute no buy")
-            result = execute_order(ticker, 'no')
-            save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid'], kalshi_market['no_bid'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+            result = execute_order(kalshi_market['ticker'], 'no', kalshi_market['no_bid_dollars'], kalshi)
+            save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
 
             order_found = True
             break
@@ -208,14 +214,14 @@ def start():
     if not order_found:
         print("No order was found:")
         print(ticker)
-        print(f"yes_bid: {kalshi_market['yes_bid']}")
-        print(f"no_bid: {kalshi_market['no_bid']}")
+        print(f"yes_bid: {kalshi_market['yes_bid_dollars']}")
+        print(f"no_bid: {kalshi_market['no_bid_dollars']}")
         print(f"1 Min candle open {current_bitcoin_price[0]['open']}")
         print(f"2 Min candle open {current_bitcoin_price[1]['open']}")
         print(f"3 Min candle open {current_bitcoin_price[2]['open']}")
 
     print("Sleeping for 5 minutes until the next market opens\n")
-    time.sleep(300) # sleep for 5 minutes while the new 15 minute market is opened
+    time.sleep(600) # sleep for 10 minutes while the new 15 minute market is opened
 
 
 if __name__ == "__main__":
