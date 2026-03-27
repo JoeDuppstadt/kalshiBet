@@ -70,7 +70,7 @@ class kalshiAPI:
                 "ticker": ticker,
                 "side": "yes",
                 "action": "buy",
-                "count": 100,
+                "count": 85,
                 "yes_price": 99
             }
         elif side == 'no':
@@ -78,7 +78,7 @@ class kalshiAPI:
                 "ticker": ticker,
                 "side": "no",
                 "action": "buy",
-                "count": 100,
+                "count": 85,
                 "no_price": 99
             }
         print(payload)

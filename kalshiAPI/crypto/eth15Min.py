@@ -18,30 +18,25 @@ def minutes_to_next_quarter():
         return 0
     return 15 - remainder
 
-def get_kalshi_bitcoin_market(ticker) -> dict:
-    try:
-        formatted_market = {}
-        url = f"https://api.elections.kalshi.com/trade-api/v2/events/{ticker}"
-        response = requests.get(url=url).json()
-        market = response['markets'][0]
+def get_kalshi_eth_market(ticker) -> dict:
+    formatted_market = {}
+    url = f"https://api.elections.kalshi.com/trade-api/v2/events/{ticker}"
+    response = requests.get(url=url).json()
+    market = response['markets'][0]
 
-        formatted_market['strike_price'] = market['floor_strike']
-        formatted_market['yes_bid_dollars'] = market['yes_bid_dollars']
-        formatted_market['no_bid_dollars'] = market['no_bid_dollars']
-        formatted_market['yes_ask_dollars'] = market['yes_ask_dollars']
-        formatted_market['no_ask_dollars'] = market['no_ask_dollars']
-        formatted_market['status'] = market['status']
-        formatted_market['result'] = market['result']
-        formatted_market['ticker'] = market['ticker']
+    formatted_market['strike_price'] = market['floor_strike']
+    formatted_market['yes_bid_dollars'] = market['yes_bid_dollars']
+    formatted_market['no_bid_dollars'] = market['no_bid_dollars']
+    formatted_market['yes_ask_dollars'] = market['yes_ask_dollars']
+    formatted_market['no_ask_dollars'] = market['no_ask_dollars']
+    formatted_market['status'] = market['status']
+    formatted_market['result'] = market['result']
+    formatted_market['ticker'] = market['ticker']
 
-        return formatted_market
-    except Exception as e:
-        print('Sleeping for 10 minutes', e)
-        time.sleep(600)
-        start()
+    return formatted_market
 
-def get_coinbase_bitcoin_prices():
-    url = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+def get_coinbase_eth_prices():
+    url = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
 
     end = datetime.now(timezone.utc)
     start = end - timedelta(minutes=4)
@@ -73,7 +68,7 @@ def get_coinbase_bitcoin_prices():
 
     return candles
 
-def generate_kalshi_btc_ticker():
+def generate_kalshi_eth_ticker():
     # Use US/Eastern timezone
     est = pytz.timezone('America/New_York')
     now = datetime.now(est)
@@ -116,26 +111,26 @@ def generate_kalshi_btc_ticker():
     time_str = f"{rounded_hour:02d}{rounded_minute:02d}"
 
     # Put it all together
-    ticker = f"KXBTC15M-{year_short}{month_abbr}{day}{time_str}"
+    ticker = f"KXETH15M-{year_short}{month_abbr}{day}{time_str}"
     return ticker
 
 def get_prices(ticker):
     with ThreadPoolExecutor(max_workers=2) as executor:
         # start both at the same time
-        coinbase_future = executor.submit(get_coinbase_bitcoin_prices)
-        kalshi_future = executor.submit(get_kalshi_bitcoin_market, ticker)
+        coinbase_future = executor.submit(get_coinbase_eth_prices)
+        kalshi_future = executor.submit(get_kalshi_eth_market, ticker)
 
         # wait for results
-        current_bitcoin_price = coinbase_future.result()
+        current_eth_price = coinbase_future.result()
         kalshi_market = kalshi_future.result()
 
-    return current_bitcoin_price, kalshi_market
+    return current_eth_price, kalshi_market
 
 def save_results_to_csv(ticker: str, prediction: str, result: str, yes_bid: str, no_bid: str, ticker1, ticker2, ticker3):
     outcome = [
         [ticker, prediction, result, yes_bid, no_bid, ticker1, ticker2, ticker3],
     ]
-    with open("/Users/josephduppstadt/Documents/kalshi/kalshiAPI/crypto/bitcoinOutcomes.csv", "a", newline="",
+    with open("/Users/josephduppstadt/Documents/kalshi/kalshiAPI/crypto/ethOutcomes.csv", "a", newline="",
               encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerows(outcome)
@@ -148,7 +143,7 @@ def execute_order(ticker, yes_or_no, price, kalshi):
     finalized = None
     while not finalized:
         time.sleep(1)
-        market = get_kalshi_bitcoin_market(ticker.split('-', 2)[0] + '-' + ticker.split('-', 2)[1])
+        market = get_kalshi_eth_market(ticker.split('-', 2)[0] + '-' + ticker.split('-', 2)[1])
         print(market)
         if yes_or_no == 'yes' and float(market['yes_ask_dollars']) < .75 and market['status'] != 'finalized':
             print('yes odds have moved significantly')
@@ -163,14 +158,12 @@ def execute_order(ticker, yes_or_no, price, kalshi):
             else:
                 print("lost")
                 return market['result']
-
-
     return None
 
 
 def start():
     kalshi = kalshiAPI()
-    ticker = generate_kalshi_btc_ticker()
+    ticker = generate_kalshi_eth_ticker()
     minutes = minutes_to_next_quarter()
 
     # pause execution until the final minute of the market
@@ -185,33 +178,33 @@ def start():
     # if there is 2 minutes left before market close. Start pooling
     while minutes < 3 and minutes != 0:
         minutes = minutes_to_next_quarter()
-        current_bitcoin_price, kalshi_market = get_prices(ticker)
+        current_eth_price, kalshi_market = get_prices(ticker)
 
         print(ticker)
         print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
         print(f'no_bid: {kalshi_market['no_bid_dollars']}')
-        print(current_bitcoin_price[0]['open'])
-        print(current_bitcoin_price[1]['open'])
-        print(current_bitcoin_price[2]['open'])
+        print(current_eth_price[0]['open'])
+        print(current_eth_price[1]['open'])
+        print(current_eth_price[2]['open'])
         print()
 
-        if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
+        if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] > current_eth_price[1][
             'open'] > \
-                current_bitcoin_price[2][
+                current_eth_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
             print("Execute yes buy")
             result = execute_order(kalshi_market['ticker'], 'yes', kalshi_market['yes_bid_dollars'], kalshi)
-            save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+            save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_eth_price[0]['open'], current_eth_price[1]['open'], current_eth_price[2]['open'])
             order_found = True
             break
 
-        elif .985 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
+        elif .985 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] < current_eth_price[1][
             'open'] < \
-                current_bitcoin_price[2][
+                current_eth_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
             print("Execute no buy")
             result = execute_order(kalshi_market['ticker'], 'no', kalshi_market['no_bid_dollars'], kalshi)
-            save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+            save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_eth_price[0]['open'], current_eth_price[1]['open'], current_eth_price[2]['open'])
 
             order_found = True
             break
@@ -221,9 +214,9 @@ def start():
         print(ticker)
         print(f"yes_bid: {kalshi_market['yes_bid_dollars']}")
         print(f"no_bid: {kalshi_market['no_bid_dollars']}")
-        print(f"1 Min candle open {current_bitcoin_price[0]['open']}")
-        print(f"2 Min candle open {current_bitcoin_price[1]['open']}")
-        print(f"3 Min candle open {current_bitcoin_price[2]['open']}")
+        print(f"1 Min candle open {current_eth_price[0]['open']}")
+        print(f"2 Min candle open {current_eth_price[1]['open']}")
+        print(f"3 Min candle open {current_eth_price[2]['open']}")
 
     print("Sleeping for 5 minutes until the next market opens\n")
     time.sleep(600) # sleep for 10 minutes while the new 15 minute market is opened
