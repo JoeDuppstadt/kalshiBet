@@ -143,13 +143,13 @@ def save_results_to_csv(ticker: str, prediction: str, result: str, yes_bid: str,
 
 def execute_order(ticker, yes_or_no, price, kalshi):
     response = kalshi.place_order(ticker, yes_or_no, price)
-    print(response)
+    #print(response)
     # check status
     finalized = None
     while not finalized:
         time.sleep(1)
         market = get_kalshi_bitcoin_market(ticker.split('-', 2)[0] + '-' + ticker.split('-', 2)[1])
-        print(market)
+        #print(market)
         if yes_or_no == 'yes' and float(market['yes_ask_dollars']) < .75 and market['status'] != 'finalized':
             print('yes odds have moved significantly')
         elif yes_or_no == 'no' and float(market['no_ask_dollars']) < .75 and market['status'] != 'finalized':
@@ -187,13 +187,13 @@ def start():
         minutes = minutes_to_next_quarter()
         current_bitcoin_price, kalshi_market = get_prices(ticker)
 
-        print(ticker)
-        print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
-        print(f'no_bid: {kalshi_market['no_bid_dollars']}')
-        print(current_bitcoin_price[0]['open'])
-        print(current_bitcoin_price[1]['open'])
-        print(current_bitcoin_price[2]['open'])
-        print()
+        # print(ticker)
+        # print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
+        # print(f'no_bid: {kalshi_market['no_bid_dollars']}')
+        # print(current_bitcoin_price[0]['open'])
+        # print(current_bitcoin_price[1]['open'])
+        # print(current_bitcoin_price[2]['open'])
+        # print()
 
         if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
             'open'] > \

@@ -1,4 +1,5 @@
 import csv
+import sys
 import time
 
 from kalshiAPI.kalshiAPI import kalshiAPI
@@ -138,13 +139,13 @@ def save_results_to_csv(ticker: str, prediction: str, result: str, yes_bid: str,
 
 def execute_order(ticker, yes_or_no, price, kalshi):
     response = kalshi.place_order(ticker, yes_or_no, price)
-    print(response)
+    #print(response)
     # check status
     finalized = None
     while not finalized:
         time.sleep(1)
         market = get_kalshi_eth_market(ticker.split('-', 2)[0] + '-' + ticker.split('-', 2)[1])
-        print(market)
+        #print(market)
         if yes_or_no == 'yes' and float(market['yes_ask_dollars']) < .75 and market['status'] != 'finalized':
             print('yes odds have moved significantly')
         elif yes_or_no == 'no' and float(market['no_ask_dollars']) < .75 and market['status'] != 'finalized':
@@ -180,31 +181,40 @@ def start():
         minutes = minutes_to_next_quarter()
         current_eth_price, kalshi_market = get_prices(ticker)
 
-        print(ticker)
-        print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
-        print(f'no_bid: {kalshi_market['no_bid_dollars']}')
-        print(current_eth_price[0]['open'])
-        print(current_eth_price[1]['open'])
-        print(current_eth_price[2]['open'])
-        print()
+        # print(ticker)
+        # print(f'yes_bid: {kalshi_market['yes_bid_dollars']}')
+        # print(f'no_bid: {kalshi_market['no_bid_dollars']}')
+        # print(current_eth_price[0]['open'])
+        # print(current_eth_price[1]['open'])
+        # print(current_eth_price[2]['open'])
+        # print()
 
-        if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] > current_eth_price[1][
+        if .989 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] > current_eth_price[1][
             'open'] > \
                 current_eth_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
             print("Execute yes buy")
             result = execute_order(kalshi_market['ticker'], 'yes', kalshi_market['yes_bid_dollars'], kalshi)
             save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_eth_price[0]['open'], current_eth_price[1]['open'], current_eth_price[2]['open'])
+
+            if result != 'yes':
+                print('Lost trade')
+                sys.exit(1)
+
             order_found = True
             break
 
-        elif .985 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] < current_eth_price[1][
+        elif .989 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] < current_eth_price[1][
             'open'] < \
                 current_eth_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
             print("Execute no buy")
             result = execute_order(kalshi_market['ticker'], 'no', kalshi_market['no_bid_dollars'], kalshi)
             save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_eth_price[0]['open'], current_eth_price[1]['open'], current_eth_price[2]['open'])
+
+            if result != 'no':
+                print('Lost trade')
+                sys.exit(1)
 
             order_found = True
             break
