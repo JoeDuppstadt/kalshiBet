@@ -51,6 +51,7 @@ class kalshiAPI:
         return response.json()['balance']
 
     def place_order(self, ticker, side, price, base_url=BASE_URL):
+        buy_contact_count = 135
         load_dotenv()
         api_key_id = os.getenv("PROD_KALSHI_API_KEY")
         private_key = load_private_key()
@@ -70,7 +71,7 @@ class kalshiAPI:
                 "ticker": ticker,
                 "side": "yes",
                 "action": "buy",
-                "count": 130,
+                "count": buy_contact_count,
                 "yes_price": 99
             }
         elif side == 'no':
@@ -78,7 +79,7 @@ class kalshiAPI:
                 "ticker": ticker,
                 "side": "no",
                 "action": "buy",
-                "count": 130,
+                "count": buy_contact_count,
                 "no_price": 99
             }
         print(payload)
