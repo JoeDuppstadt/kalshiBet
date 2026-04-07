@@ -1,4 +1,5 @@
 import csv
+import sys
 import time
 
 from kalshiAPI.kalshiAPI import kalshiAPI
@@ -195,23 +196,32 @@ def start():
         # print(current_bitcoin_price[2]['open'])
         # print()
 
-        if .985 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
+        if .989 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 2 and current_bitcoin_price[0]['open'] > current_bitcoin_price[1][
             'open'] > \
                 current_bitcoin_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
             print("Execute yes buy")
             result = execute_order(kalshi_market['ticker'], 'yes', kalshi_market['yes_bid_dollars'], kalshi)
             save_results_to_csv(ticker, 'yes', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+
+            if result != 'yes':
+                print('Lost trade')
+                sys.exit(1)
+
             order_found = True
             break
 
-        elif .985 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
+        elif .989<= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 2 and current_bitcoin_price[0]['open'] < current_bitcoin_price[1][
             'open'] < \
                 current_bitcoin_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
             print("Execute no buy")
             result = execute_order(kalshi_market['ticker'], 'no', kalshi_market['no_bid_dollars'], kalshi)
             save_results_to_csv(ticker, 'no', result, kalshi_market['yes_bid_dollars'], kalshi_market['no_bid_dollars'], current_bitcoin_price[0]['open'], current_bitcoin_price[1]['open'], current_bitcoin_price[2]['open'])
+
+            if result != 'no':
+                print('Lost trade')
+                sys.exit(1)
 
             order_found = True
             break

@@ -20,21 +20,26 @@ def minutes_to_next_quarter():
     return 15 - remainder
 
 def get_kalshi_eth_market(ticker) -> dict:
-    formatted_market = {}
-    url = f"https://api.elections.kalshi.com/trade-api/v2/events/{ticker}"
-    response = requests.get(url=url).json()
-    market = response['markets'][0]
+    try:
+        formatted_market = {}
+        url = f"https://api.elections.kalshi.com/trade-api/v2/events/{ticker}"
+        response = requests.get(url=url).json()
+        market = response['markets'][0]
 
-    formatted_market['strike_price'] = market['floor_strike']
-    formatted_market['yes_bid_dollars'] = market['yes_bid_dollars']
-    formatted_market['no_bid_dollars'] = market['no_bid_dollars']
-    formatted_market['yes_ask_dollars'] = market['yes_ask_dollars']
-    formatted_market['no_ask_dollars'] = market['no_ask_dollars']
-    formatted_market['status'] = market['status']
-    formatted_market['result'] = market['result']
-    formatted_market['ticker'] = market['ticker']
+        formatted_market['strike_price'] = market['floor_strike']
+        formatted_market['yes_bid_dollars'] = market['yes_bid_dollars']
+        formatted_market['no_bid_dollars'] = market['no_bid_dollars']
+        formatted_market['yes_ask_dollars'] = market['yes_ask_dollars']
+        formatted_market['no_ask_dollars'] = market['no_ask_dollars']
+        formatted_market['status'] = market['status']
+        formatted_market['result'] = market['result']
+        formatted_market['ticker'] = market['ticker']
 
-    return formatted_market
+        return formatted_market
+    except Exception as e:
+        print('Sleeping for 10 minutes', e)
+        time.sleep(600)
+        start()
 
 def get_coinbase_eth_prices():
     url = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
@@ -189,7 +194,7 @@ def start():
         # print(current_eth_price[2]['open'])
         # print()
 
-        if .989 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] > current_eth_price[1][
+        if .989 <= float(kalshi_market['yes_bid_dollars']) < .995 and minutes < 2 and current_eth_price[0]['open'] > current_eth_price[1][
             'open'] > \
                 current_eth_price[2][
                     'open']:  # if the current yes bid is >= 99 with a minute left and the last 2 candles are going up, execute a buy order
@@ -204,7 +209,7 @@ def start():
             order_found = True
             break
 
-        elif .989 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 3 and current_eth_price[0]['open'] < current_eth_price[1][
+        elif .989 <= float(kalshi_market['no_bid_dollars']) < .995 and minutes < 2 and current_eth_price[0]['open'] < current_eth_price[1][
             'open'] < \
                 current_eth_price[2][
                     'open']:  # if the current no bid is >= 99 with a minute left and the last 2 candles are going down, execute a buy order
